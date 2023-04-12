@@ -5,3 +5,7 @@ type Alert struct {
 	Content string
 	Proxy   []string
 }
+
+type Worker interface {
+	Send()
+}
