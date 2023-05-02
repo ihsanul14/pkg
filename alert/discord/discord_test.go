@@ -11,12 +11,18 @@ func Test_Send(t *testing.T) {
 		URL: "https://discord.com",
 		Content: ContentData{
 			Name:    "Test",
-			Message: "message",
+			Message: "",
 			Roles:   []string{"917325776456663060", "1093006681425858560"},
 		},
 		Proxy: nil,
 	}
-	t.Run("Test Send", func(t *testing.T) {
+	t.Run("Test Not Send", func(t *testing.T) {
+		err := alert.Send()
+		assert.Nil(t, err)
+	})
+
+	alert.Content.Message = "test with content"
+	t.Run("Test Not Send", func(t *testing.T) {
 		err := alert.Send()
 		assert.Nil(t, err)
 	})

@@ -37,7 +37,10 @@ func (s *DiscordAlert) buildContent() string {
 }
 
 func (s *DiscordAlert) Send() error {
-	return s.send()
+	if s.Content.Message != "" {
+		return s.send()
+	}
+	return nil
 }
 
 func (s *DiscordAlert) send() error {
