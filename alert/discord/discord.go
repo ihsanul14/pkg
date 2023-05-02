@@ -16,12 +16,12 @@ type DiscordAlert struct {
 
 type ContentData struct {
 	Name    string
-	Message string
+	Message error
 	Roles   []string
 }
 
 func (s *DiscordAlert) buildContent() string {
-	res := fmt.Sprintf("%s ```%s```", s.Content.Name, s.Content.Message)
+	res := fmt.Sprintf("%s ```%s```", s.Content.Name, s.Content.Message.Error())
 	if s.Content.Roles != nil {
 		var roles string
 		for k, v := range s.Content.Roles {
@@ -37,7 +37,7 @@ func (s *DiscordAlert) buildContent() string {
 }
 
 func (s *DiscordAlert) Send() error {
-	if s.Content.Message != "" {
+	if s.Content.Message != nil {
 		return s.send()
 	}
 	return nil

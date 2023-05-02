@@ -1,17 +1,19 @@
 package discord
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_Send(t *testing.T) {
+	var err error
 	alert := &DiscordAlert{
 		URL: "https://discord.com",
 		Content: ContentData{
 			Name:    "Test",
-			Message: "",
+			Message: err,
 			Roles:   []string{"917325776456663060", "1093006681425858560"},
 		},
 		Proxy: nil,
@@ -21,7 +23,8 @@ func Test_Send(t *testing.T) {
 		assert.Nil(t, err)
 	})
 
-	alert.Content.Message = "test with content"
+	err = fmt.Errorf("%v", "test content")
+	alert.Content.Message = err
 	t.Run("Test Not Send", func(t *testing.T) {
 		err := alert.Send()
 		assert.Nil(t, err)
