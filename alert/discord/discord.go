@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+
+	"github.com/ihsanul14/pkg/alert"
 )
 
 type DiscordAlert struct {
@@ -20,7 +22,11 @@ type ContentData struct {
 	Roles   []string
 }
 
-func (s *DiscordAlert) buildContent() string {
+func NewDiscordAlert() alert.Alert {
+	return &DiscordAlert{}
+}
+
+func (s *DiscordAlert) BuildContent() string {
 	res := fmt.Sprintf("%s ```%s```", s.Content.Name, s.Content.Message.Error())
 	if s.Content.Roles != nil {
 		var roles string
@@ -38,35 +44,31 @@ func (s *DiscordAlert) buildContent() string {
 
 func (s *DiscordAlert) Send() error {
 	if s.Content.Message != nil {
-		return s.send()
+		content := map[string]string{
+			"content": s.BuildContent(),
+		}
+		payload, err := json.Marshal(content)
+		if err != nil {
+			return err
+		}
+		req, err := http.NewRequest("POST", s.URL, bytes.NewBuffer(payload))
+		if err != nil {
+			return err
+		}
+		req.Header.Set("Content-Type", "application/json")
+
+		client := s.GenerateClient()
+		resp, err := client.Do(req)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+		return nil
 	}
 	return nil
 }
 
-func (s *DiscordAlert) send() error {
-	content := map[string]string{
-		"content": s.buildContent(),
-	}
-	payload, err := json.Marshal(content)
-	if err != nil {
-		return err
-	}
-	req, err := http.NewRequest("POST", s.URL, bytes.NewBuffer(payload))
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	client := s.generateClient()
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	return nil
-}
-
-func (s *DiscordAlert) generateClient() *http.Client {
+func (s *DiscordAlert) GenerateClient() *http.Client {
 	if s.Proxy == nil {
 		return &http.Client{}
 	}
