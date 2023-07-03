@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
 
 	"github.com/ihsanul14/pkg/alert"
 )
@@ -51,13 +50,13 @@ func (s *DiscordAlert) Send() error {
 		if err != nil {
 			return err
 		}
-		req, err := http.NewRequest("POST", s.URL, bytes.NewBuffer(payload))
+		req, err := http.NewRequest(alert.HTTP_POST, s.URL, bytes.NewBuffer(payload))
 		if err != nil {
 			return err
 		}
-		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set(alert.ContentType, alert.ApplicationJson)
 
-		client := s.GenerateClient()
+		client := alert.GenerateClient(s.Proxy)
 		resp, err := client.Do(req)
 		if err != nil {
 			return err
@@ -66,34 +65,4 @@ func (s *DiscordAlert) Send() error {
 		return nil
 	}
 	return nil
-}
-
-func (s *DiscordAlert) GenerateClient() *http.Client {
-	if s.Proxy == nil {
-		return &http.Client{}
-	}
-
-	proxyURLs := s.Proxy
-	proxyFunc := func(req *http.Request) (*url.URL, error) {
-		if len(proxyURLs) == 0 {
-			return nil, fmt.Errorf("no proxies available")
-		}
-
-		proxyURL := proxyURLs[0]
-		proxyURLs = proxyURLs[1:]
-
-		url, err := url.Parse(proxyURL)
-		if err != nil {
-			return nil, err
-		}
-		return url, nil
-	}
-
-	client := &http.Client{
-		Transport: &http.Transport{
-			Proxy: proxyFunc,
-		},
-	}
-
-	return client
 }
